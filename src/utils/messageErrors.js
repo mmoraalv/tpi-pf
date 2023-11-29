@@ -1,40 +1,41 @@
-import passport from "passport";
+import passport from 'passport';
 
-//Funcion general retornar errores en las estrategias de passport
-
+//Función general para retornar errores en las estrategias de passport
 
 //Primer filtro de cualquier estrategia de passport
-export const passportError = (strategy) => {
-    return async (req, res, next) => {
-        passport.authenticate(strategy, (error, user, info) => {
-            if (error) {
-                return next(error)
-            }
+export const passportError = strategy => {
+	return async (req, res, next) => {
+		passport.authenticate(strategy, (error, user, info) => {
+			if (error) {
+				return next(error);
+			}
 
-            if (!user) {
-                return res.status(401).send({ error: info.messages ? info.messages : info.toString() }) //Si me envian info.messages, muestro la respuesta que me enviaron sino muestro el objeto info pasado a string (pueden enviar info.messages = "Usuario no valido" o info = "User no validado")
-            }
+			if (!user) {
+				return res
+					.status(401)
+					.send({ error: info.messages ? info.messages : info.toString() }); // si me envian info.messages, muestro la respuesta que me enviaron. Si no, muestro el objeto info pasado a strign ( hay estrategias que envian el objeto info con la propiedad message)
+			}
 
-            req.user = user
-            next()
-        })(req, res, next) //Esto es por que se trata de un Middlewares
-    }
-}
+			req.user = user;
+			next();
+		})(req, res, next);
+	};
+};
 
-//Ingreso un rol y verifico si mi usuario lo cumple (ej; ingreso admin y veo si mi user es admin o no)
-export const authorization = (rol) => {
+// Ingreso un rol y verifico si mi usuario lo cumple (ej: ingreso admin y veo si lo es o no)
+// Hay rutas propias para los usuarios, rutas propias para los admins, etc
+export const authorization = rols => {
+	return async (req, res, next) => {
+		// Se vuelve a consultar si el usuario existe dado que el token puede expirar, el usuario puede borrar el historial o se rompe la compu ja!
+		if (!req.user) {
+			return res.status(401).send({ error: 'User no autorizado' });
+		}
 
-    return async (req, res, next) => {
-        //Se vuelve a consultar si el usuario existe dado que: el token puede expirar, el user borrar el historial o se rompe la compu
-        if (!req.user) {
-            return res.status(401).send({ error: 'User no autorizado' })
-        }
+		const isAuthorized = rols.find(rol => rol == req.user.user.rol);
+		if (!isAuthorized) {
+			return res.status(403).send({ error: 'User no tiene los privilegios necesarios' });
+		}
 
-        if (req.user.user.rol != rol) { //Si mi usuario tiene un rol distinto al ingresado como parametro
-            return res.status(403).send({ error: 'User no tiene los privilegios necesarios' })
-        }
-
-        next()
-    }
-
-}
+		next();
+	};
+};

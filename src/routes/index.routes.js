@@ -11,7 +11,7 @@ import loggertestRouter from "./loggersTest.routes.js";
 const router = Router()
 
 router.use('/api/product', productRouter);
-router.use('/api/user', userRouter);
+router.use('/api/users', userRouter);
 router.use('/api/carts', cartRouter);
 router.use('/api/sessions', sessionRouter);
 router.use('/api/messages', messageRouter);

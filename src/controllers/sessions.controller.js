@@ -1,4 +1,5 @@
-import logger from '../utils/logger'; // Importa el logger creado
+import logger from '../utils/loggers.js'; // Importa el logger creado
+import { generateToken } from "../utils/jwt.js";
 
 const postSession = async (req, res) => {
     try {
